@@ -88,7 +88,7 @@ private fun EditJugadorBody(
             )
             if (state.partidasError != null) {
                 Text(
-                    text = state.partidas,
+                    text = state.partidasError,
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodySmall
                 )
