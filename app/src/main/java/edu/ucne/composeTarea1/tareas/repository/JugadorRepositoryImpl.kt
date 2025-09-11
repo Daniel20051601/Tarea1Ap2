@@ -1,5 +1,6 @@
 package edu.ucne.composeTarea1.tareas.repository
 
+import androidx.compose.runtime.snapshots.toInt
 import edu.ucne.composeTarea1.domain.model.Jugador
 import edu.ucne.composeTarea1.domain.repository.JugadorRepository
 import edu.ucne.composeTarea1.tareas.local.JugadorDao
@@ -18,8 +19,8 @@ class JugadorRepositoryImpl @Inject constructor(private val dao: JugadorDao): Ju
     override suspend fun getJugador(id: Int): Jugador? = dao.getById(id)?.toDomain()
 
     override suspend fun upsertJugador(jugador: Jugador): Int {
-        dao.upsert(jugador.toEntity())
-        return jugador.jugadorId
+        val generatedId = dao.upsert(jugador.toEntity())
+        return generatedId.toInt()
     }
 
     override suspend fun deleteJugador(id: Int) = dao.delete(id)

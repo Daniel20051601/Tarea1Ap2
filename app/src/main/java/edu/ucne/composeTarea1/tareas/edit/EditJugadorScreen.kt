@@ -159,7 +159,7 @@ class EditTaskUiStatePreviewProvider : PreviewParameterProvider<EditJugadorUiSta
     )
 }
 
-@Preview(showBackground = true, widthDp = 320)
+@Preview(showSystemUi = true,showBackground = true, widthDp = 320)
 @Composable
 fun EditTaskBodyPreview(
     @PreviewParameter(EditTaskUiStatePreviewProvider::class) state: EditJugadorUiState
@@ -174,7 +174,9 @@ fun EditTaskBodyPreview(
     }
 }
 
-@Preview(showBackground = true, widthDp = 320)
+@Preview(
+    showBackground = true,
+    widthDp = 320)
 @Composable
 fun EditTaskBodyNewTaskPreview() {
     MaterialTheme {

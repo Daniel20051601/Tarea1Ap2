@@ -16,7 +16,7 @@ interface JugadorDao {
     suspend fun getById(id: Int): JugadorEntity?
 
     @Upsert
-    suspend fun upsert(jugador: JugadorEntity)
+    suspend fun upsert(jugador: JugadorEntity): Long
 
     @Delete
     suspend fun delete(jugador: JugadorEntity)
