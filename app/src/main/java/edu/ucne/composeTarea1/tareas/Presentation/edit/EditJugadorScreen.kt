@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -22,9 +23,13 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
@@ -34,6 +39,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import edu.ucne.composeTarea1.domain.model.Jugador
+import edu.ucne.composeTarea1.tareas.Presentation.list.ListJugadorUiEvent
 
 @Composable
 fun EditJugadorScreen(
@@ -63,6 +70,23 @@ private fun EditJugadorBody(
     onEvent: (EditJugadorEvent) -> Unit,
     onNavigateBack: () -> Unit
 ) {
+
+    var jugadorParaEliminar by remember { mutableStateOf<Jugador?>(null) }
+
+    jugadorParaEliminar?.let { jugador ->
+        DeleteConfirmationDialog(
+            jugador = jugador,
+            onConfirm = {
+                onEvent(EditJugadorEvent.Delete)
+                jugadorParaEliminar = null
+            },
+            onDismiss = {
+                jugadorParaEliminar = null
+            }
+        )
+    }
+
+
     var topText  =
         if (state.canBeDeleted){
             "Editar Jugador"
@@ -139,7 +163,15 @@ private fun EditJugadorBody(
 
                 if (state.canBeDeleted) {
                     OutlinedButton(
-                        onClick = { onEvent(EditJugadorEvent.Delete) },
+                        onClick = {
+                            state.jugadorId?.let { id ->
+                                jugadorParaEliminar = Jugador(
+                                    jugadorId = id,
+                                    nombres = state.nombre,
+                                    partidas = state.partidas.toIntOrNull() ?: 0
+                            )
+                        }
+                                  },
                         enabled = !state.isDeleting,
                         modifier = Modifier.weight(1f)
                     ) {
@@ -149,6 +181,34 @@ private fun EditJugadorBody(
             }
         }
     }
+}
+
+@Composable
+fun DeleteConfirmationDialog(
+    jugador: Jugador,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+){
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(text = "Eliminar Jugador")
+        },
+        text = {
+            Text("¿Estás seguro de que quieres eliminar a ${jugador.nombres}?")
+        },
+        confirmButton = {
+            TextButton(onClick = onConfirm) {
+                Text("Confirmar")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancelar")
+            }
+        }
+    )
+
 }
 
 class EditTaskUiStatePreviewProvider : PreviewParameterProvider<EditJugadorUiState> {
