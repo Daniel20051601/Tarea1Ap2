@@ -1,9 +1,8 @@
-package edu.ucne.composeTarea1.tareas.list
+package edu.ucne.composeTarea1.tareas.Presentation.list
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import edu.ucne.composeTarea1.domain.model.Jugador
 import edu.ucne.composeTarea1.domain.repository.JugadorRepository
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -18,8 +17,16 @@ class JugadorListViewModel @Inject constructor(
 ) : ViewModel() {
     val state: StateFlow<ListJugadorUiState> =
         repository.observeJugador()
-            .map { tasks ->
-                ListJugadorUiState(jugadores = tasks, isLoading = false)
+            .map { jugadores ->
+                val victorias = jugadores.find { it.nombres == "Yo" }?.partidas ?: 0
+
+                val otrosJugadores = jugadores.filter { it.nombres != "Yo" }
+
+                ListJugadorUiState(
+                    jugadores = otrosJugadores,
+                    misVictorias = victorias,
+                    isLoading = false
+                )
             }
             .stateIn(
                 scope = viewModelScope,
