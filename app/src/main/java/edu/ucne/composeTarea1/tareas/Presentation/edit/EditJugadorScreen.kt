@@ -1,15 +1,22 @@
-package edu.ucne.composeTarea1.tareas.edit
+package edu.ucne.composeTarea1.tareas.Presentation.edit
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -45,17 +52,39 @@ fun EditJugadorScreen(
     }
     EditJugadorBody(
         state = state,
-        onEvent = viewModel::onEvent
+        onEvent = viewModel::onEvent,
+        onNavigateBack = { navController.popBackStack() }
     )
 }
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun EditJugadorBody(
     state: EditJugadorUiState,
-    onEvent: (EditJugadorEvent) -> Unit
+    onEvent: (EditJugadorEvent) -> Unit,
+    onNavigateBack: () -> Unit
 ) {
+    var topText  =
+        if (state.canBeDeleted){
+            "Editar Jugador"
+        }else {
+            "Añadir Jugador"
+        }
     Scaffold(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize(),
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = { Text(topText) },
+                windowInsets = WindowInsets(top = 0.dp),
+                navigationIcon = {
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Volver atrás"
+                        )
+                    }
+                }
+            )
+        }
     ) { padding ->
         Column(
             modifier = Modifier
@@ -169,7 +198,8 @@ fun EditTaskBodyPreview(
             state = state,
             onEvent = { event ->
                 println("Preview Event: $event")
-            }
+            },
+            onNavigateBack = {}
         )
     }
 }
@@ -190,7 +220,8 @@ fun EditTaskBodyNewTaskPreview() {
                 nombreError = null,
                 partidasError = null
             ),
-            onEvent = {}
+            onEvent = {},
+            onNavigateBack = {}
         )
     }
 }
