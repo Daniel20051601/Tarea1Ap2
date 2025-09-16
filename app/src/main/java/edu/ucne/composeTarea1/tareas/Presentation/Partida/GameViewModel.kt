@@ -142,7 +142,7 @@ class GameViewModel @Inject constructor(
             return
         }
 
-        lastTurnWasTimeout = false // Un movimiento resetea la bandera de timeout
+        lastTurnWasTimeout = false
 
         val newBoard = _gameState.value.board.toMutableList()
         newBoard[index] = _gameState.value.currentPlayer
