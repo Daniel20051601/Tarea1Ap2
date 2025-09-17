@@ -1,4 +1,4 @@
-package edu.ucne.composeTarea1.tareas.local
+package edu.ucne.composeTarea1.tareas.local.Jugador
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

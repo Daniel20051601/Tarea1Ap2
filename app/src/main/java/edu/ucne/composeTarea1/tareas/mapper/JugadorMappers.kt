@@ -1,7 +1,7 @@
 package edu.ucne.composeTarea1.tareas.mapper
 
 import edu.ucne.composeTarea1.domain.model.Jugador
-import edu.ucne.composeTarea1.tareas.local.JugadorEntity
+import edu.ucne.composeTarea1.tareas.local.Jugador.JugadorEntity
 
 fun JugadorEntity.toDomain(): Jugador = Jugador(
     jugadorId = jugadorId,

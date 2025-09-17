@@ -1,4 +1,4 @@
-package edu.ucne.composeTarea1.tareas.list
+package edu.ucne.composeTarea1.tareas.Presentation.list
 
 import edu.ucne.composeTarea1.domain.model.Jugador
 

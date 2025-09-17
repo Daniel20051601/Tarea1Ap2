@@ -1,10 +1,11 @@
-package edu.ucne.composeTarea1.tareas.local
+package edu.ucne.composeTarea1.tareas.local.Jugador
 
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Query
 import androidx.room.Upsert
 import edu.ucne.composeTarea1.domain.model.Jugador
+import edu.ucne.composeTarea1.tareas.local.Jugador.JugadorEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
