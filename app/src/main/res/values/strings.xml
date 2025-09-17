@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Tarea1</string>
+    <string name="app_name">TicTacToe</string>
     <!-- Textos para la Pantalla de Partida -->
     <string name="choose_opponent">Elige a tu Oponente</string>
     <string name="vs">VS</string>
