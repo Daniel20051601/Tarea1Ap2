@@ -75,24 +75,6 @@ fun ListJugadorScreen(
             CenterAlignedTopAppBar(
                 title = { Text("Jugadores") },
                 windowInsets = WindowInsets(top = 0.dp),
-                actions = {
-                    Row(
-                        modifier = Modifier.padding(end = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.EmojiEvents,
-                            contentDescription = "Victorias",
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                        Text(
-                            text = state.misVictorias.toString(),
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                }
             )
         },
         floatingActionButton = {
