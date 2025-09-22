@@ -4,9 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import edu.ucne.composeTarea1.domain.model.Jugador
-import edu.ucne.composeTarea1.domain.usecase.DeleteJugadorUseCase
-import edu.ucne.composeTarea1.domain.usecase.GetJugadorUseCase
-import edu.ucne.composeTarea1.domain.usecase.UpsertJugadorUseCase
+import edu.ucne.composeTarea1.domain.usecase.jugadorUseCase.DeleteJugadorUseCase
+import edu.ucne.composeTarea1.domain.usecase.jugadorUseCase.GetJugadorUseCase
+import edu.ucne.composeTarea1.domain.usecase.jugadorUseCase.UpsertJugadorUseCase
 import edu.ucne.composeTarea1.domain.validation.JugadorValidator
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
