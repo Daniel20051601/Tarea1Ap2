@@ -8,4 +8,6 @@ interface PartidaRepository {
     suspend fun getById(id: Int): Partida?
     suspend fun upsert(partida: Partida)
     suspend fun delete(partida: Partida)
+    fun getPartidaEnProgreso(): Flow<Partida?>
+    suspend fun clearPartidasEnProgreso()
 }

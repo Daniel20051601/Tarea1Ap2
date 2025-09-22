@@ -7,13 +7,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -60,6 +59,7 @@ private fun PartidaSetupScreen(viewModel: GameViewModel) {
     val sheetState = rememberModalBottomSheetState()
     val scope = rememberCoroutineScope()
     var showBottomSheet by remember { mutableStateOf(false) }
+    var selectingLeft by remember { mutableStateOf(true) }
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -76,12 +76,22 @@ private fun PartidaSetupScreen(viewModel: GameViewModel) {
                 horizontalArrangement = Arrangement.SpaceAround,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                PlayerSlot(jugador = state.jugadorIzquierda, placeholder = stringResource(R.string.player_placeholder_you))
+                PlayerSlot(
+                    jugador = state.jugadorIzquierda,
+                    placeholder = stringResource(R.string.player_placeholder_opponent),
+                    onClick = {
+                        selectingLeft = true
+                        showBottomSheet = true
+                    }
+                )
                 Text(stringResource(R.string.vs), fontSize = 24.sp, fontWeight = FontWeight.Bold)
                 PlayerSlot(
                     jugador = state.jugadorDerecha,
                     placeholder = stringResource(R.string.player_placeholder_opponent),
-                    onClick = { showBottomSheet = true }
+                    onClick = {
+                        selectingLeft = false
+                        showBottomSheet = true
+                    }
                 )
             }
             Spacer(modifier = Modifier.height(32.dp))
@@ -95,6 +105,12 @@ private fun PartidaSetupScreen(viewModel: GameViewModel) {
     }
 
     if (showBottomSheet) {
+        val listaParaMostrar = if (selectingLeft) {
+            state.listaOponentes.filter { it.jugadorId != state.jugadorDerecha?.jugadorId }
+        } else {
+            state.listaOponentes.filter { it.jugadorId != state.jugadorIzquierda?.jugadorId }
+        }
+
         ModalBottomSheet(onDismissRequest = { showBottomSheet = false }, sheetState = sheetState) {
             LazyColumn(contentPadding = PaddingValues(16.dp)) {
                 item {
@@ -102,22 +118,29 @@ private fun PartidaSetupScreen(viewModel: GameViewModel) {
                         text = stringResource(R.string.select_an_opponent),
                         fontWeight = FontWeight.Bold,
                         style = MaterialTheme.typography.titleLarge,
-                        modifier = Modifier.padding(bottom = 16.dp)
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 16.dp)
                     )
                 }
-                if (state.listaOponentes.isEmpty()) {
+                if (listaParaMostrar.isEmpty()) {
                     item {
                         Text(stringResource(R.string.no_other_players))
                     }
                 } else {
-                    items(state.listaOponentes) { oponente ->
+                    items(listaParaMostrar) { jugador ->
                         Text(
-                            text = oponente.nombres,
+                            text = jugador.nombres,
                             fontSize = 20.sp,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable {
-                                    viewModel.onOponenteSelected(oponente)
+                                    if (selectingLeft) {
+                                        viewModel.onJugadorIzquierdaSelected(jugador)
+                                    } else {
+                                        viewModel.onJugadorDerechaSelected(jugador)
+                                    }
                                     scope.launch { sheetState.hide() }.invokeOnCompletion {
                                         if (!sheetState.isVisible) showBottomSheet = false
                                     }
@@ -147,7 +170,7 @@ fun GameBoard(
     onCellClick: (Int) -> Unit,
     onRestartGame: () -> Unit
 ) {
-    val setupState by hiltViewModel<GameViewModel>().setupState.collectAsState()
+    val setupState by hiltViewModel<GameViewModel>().setupState.collectAsStateWithLifecycle()
     val jugadorX = setupState.jugadorIzquierda?.nombres ?: "Jugador X"
     val jugadorO = setupState.jugadorDerecha?.nombres ?: "Jugador O"
 
@@ -155,7 +178,7 @@ fun GameBoard(
         uiState.winner == Player.X -> stringResource(R.string.game_winner, jugadorX)
         uiState.winner == Player.O -> stringResource(R.string.game_winner, jugadorO)
         uiState.isDraw -> stringResource(R.string.game_draw)
-        uiState.currentPlayer == Player.X -> stringResource(R.string.your_turn)
+        uiState.currentPlayer == Player.X -> stringResource(R.string.opponent_turn, jugadorX)
         else -> stringResource(R.string.opponent_turn, jugadorO)
     }
     Text(
@@ -163,17 +186,6 @@ fun GameBoard(
         fontSize = 24.sp,
         fontWeight = FontWeight.Bold
     )
-
-    Spacer(modifier = Modifier.height(16.dp))
-    if (uiState.winner == null && !uiState.isDraw) {
-        val timerColor = if (uiState.remainingTime <= 10) Color.Red else MaterialTheme.colorScheme.onSurface
-        Text(
-            text = "Tiempo restante: ${uiState.remainingTime}s",
-            fontSize = 18.sp,
-            color = timerColor,
-            fontWeight = FontWeight.SemiBold
-        )
-    }
 
     Spacer(modifier = Modifier.height(20.dp))
     GameBoardBody(board = uiState.board, onCellClick = onCellClick)
@@ -239,9 +251,9 @@ private fun PartidaSetupScreenPreview() {
                 horizontalArrangement = Arrangement.SpaceAround,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                PlayerSlot(jugador = Jugador(nombres = "Yo", partidas = 0), placeholder = "Yo")
+                PlayerSlot(jugador = Jugador(nombres = "A", partidas = 0), placeholder = "Izquierda")
                 Text("VS", fontSize = 24.sp, fontWeight = FontWeight.Bold)
-                PlayerSlot(jugador = null, placeholder = "Oponente", onClick = {})
+                PlayerSlot(jugador = Jugador(nombres = "B", partidas = 0), placeholder = "Derecha", onClick = {})
             }
             Spacer(modifier = Modifier.height(32.dp))
             Button(onClick = {}, enabled = false) {

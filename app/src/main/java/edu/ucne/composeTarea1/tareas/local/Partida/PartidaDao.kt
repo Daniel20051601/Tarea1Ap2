@@ -23,4 +23,10 @@ interface PartidaDao {
     @Query("SELECT * FROM Partidas WHERE jugador1Id = :jugadorId OR jugador2Id = :jugadorId ")
     fun observePartidasDeJugador(jugadorId: Int): Flow<List<PartidaEntity>>
 
+    @Query("SELECT * FROM Partidas WHERE esFinalizada = 0 LIMIT 1")
+    fun getPartidaEnProgreso(): Flow<PartidaEntity?>
+
+    @Query("DELETE FROM Partidas WHERE esFinalizada = 0")
+    suspend fun clearPartidasEnProgreso()
+
 }

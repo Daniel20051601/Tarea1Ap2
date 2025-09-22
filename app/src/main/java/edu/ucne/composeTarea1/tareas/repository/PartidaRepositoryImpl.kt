@@ -30,4 +30,14 @@ class PartidaRepositoryImpl @Inject constructor(
     override suspend fun delete(partida: Partida) {
         partidaDao.delete(partida.toEntity())
     }
+
+    override fun getPartidaEnProgreso(): Flow<Partida?> {
+        return partidaDao.getPartidaEnProgreso().map { entity ->
+            entity?.toDomain()
+        }
+    }
+
+    override suspend fun clearPartidasEnProgreso() {
+        partidaDao.clearPartidasEnProgreso()
+    }
 }

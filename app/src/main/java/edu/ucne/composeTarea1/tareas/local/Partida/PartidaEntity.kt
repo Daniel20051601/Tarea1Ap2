@@ -36,5 +36,7 @@ data class PartidaEntity(
     val jugador1Id: Int?,
     val jugador2Id: Int?,
     val ganadorId: Int?,
-    val esFinalizada: Boolean = false
+    var esFinalizada: Boolean,
+    val boardState: String,
+    val currentPlayer: String
 )
