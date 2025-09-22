@@ -1,4 +1,4 @@
-package edu.ucne.composeTarea1.domain.usecase
+package edu.ucne.composeTarea1.domain.usecase.jugadorUseCase
 
 import edu.ucne.composeTarea1.domain.repository.JugadorRepository
 import javax.inject.Inject
