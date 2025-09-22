@@ -13,10 +13,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Card
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -30,22 +34,34 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavController
+import androidx.navigation.NavHost
 import edu.ucne.composeTarea1.domain.model.Partida
+import edu.ucne.composeTarea1.tareas.Presentation.Partida.Player
 import edu.ucne.composeTarea1.ui.theme.Tarea1Theme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HistorialPartidasScreen(
-    viewModel: HistorialPartidasViewModel = hiltViewModel()
+    navigation: NavController,
+    viewModel: HistorialPartidasViewModel = hiltViewModel(),
+
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Historial de Partidas") },
+                title = { Text("Partidas") },
                 windowInsets = WindowInsets(top = 0.dp)
             )
+        },
+        floatingActionButton = {
+            FloatingActionButton(onClick = {
+                navigation.navigate("partida_screen")},
+            ){
+                Icon(Icons.Default.Add, contentDescription = "Nueva partida")
+            }
         }
     ) { padding ->
         Box(
@@ -126,7 +142,13 @@ fun PartidaItemPreview() {
                     jugador1Id = 1,
                     jugador2Id = 20,
                     ganadorId = 1,
-                    esFinalizada = true
+                    esFinalizada = true,
+                    boardState = listOf(
+                        Player.X, Player.X, Player.X,
+                        Player.O, Player.O, null,
+                        null, null, null
+                    ),
+                    currentPlayer = "O"
                 ),
                 nombreGanador = "Juan Perez"
             )
@@ -145,7 +167,13 @@ fun PartidaItemEmpatePreview() {
                 jugador1Id = 15,
                 jugador2Id = 25,
                 ganadorId = null,
-                esFinalizada = true
+                esFinalizada = true,
+                boardState = listOf(
+                    Player.X, Player.O, Player.X,
+                    Player.O, Player.X, Player.X,
+                    Player.O, Player.X, Player.O
+                ),
+                currentPlayer = "X"
             ),
             nombreGanador = null
         )
