@@ -140,7 +140,9 @@ class GameViewModel @Inject constructor(
             )
         }
         saveGameProgress(newBoard, nextPlayer)
-        if (newWinner != null || isDraw) onGameFinished(newWinner)
+        if (newWinner != null || isDraw) {
+            onGameFinished(ganador = newWinner, isDraw = isDraw)
+        }
     }
 
     private fun saveGameProgress(board: List<Player?>, currentPlayer: Player) {
@@ -164,26 +166,33 @@ class GameViewModel @Inject constructor(
         }
     }
 
-    private fun onGameFinished(ganador: Player?) {
+    private fun onGameFinished(ganador: Player?, isDraw: Boolean = false) {
         viewModelScope.launch {
             val izq = setupState.value.jugadorIzquierda ?: return@launch
             val der = setupState.value.jugadorDerecha ?: return@launch
 
-            val jugadorGanador = when (ganador) {
-                Player.X -> izq
-                Player.O -> der
-                null -> null
-            }
-            if (jugadorGanador != null) {
-                val actualizado = jugadorGanador.copy(partidas = jugadorGanador.partidas + 1)
+            val jugadorGanadorId: Int?
+
+            if (ganador != null) {
+                val jugadorQueGano = when (ganador) {
+                    Player.X -> izq
+                    Player.O -> der
+                }
+                val actualizado = jugadorQueGano.copy(partidas = jugadorQueGano.partidas + 1)
                 jugadorRepository.save(actualizado)
+                jugadorGanadorId = jugadorQueGano.jugadorId
+            } else {
+                jugadorGanadorId = null
             }
-            partidaRepository.getPartidaEnProgreso().firstOrNull()?.let { partidaActual ->
-                val partidaFinalizada = partidaActual.copy(
-                    ganadorId = jugadorGanador?.jugadorId,
-                    esFinalizada = true
-                )
-                partidaRepository.upsert(partidaFinalizada)
+
+            if (ganador != null || isDraw) {
+                partidaRepository.getPartidaEnProgreso().firstOrNull()?.let { partidaActual ->
+                    val partidaFinalizada = partidaActual.copy(
+                        ganadorId = jugadorGanadorId,
+                        esFinalizada = true
+                    )
+                    partidaRepository.upsert(partidaFinalizada)
+                }
             }
         }
     }
