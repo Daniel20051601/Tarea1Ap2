@@ -1,4 +1,4 @@
-package edu.ucne.composeTarea1.tareas.Presentation.HistorialPartidas
+package edu.ucne.composeTarea1.tareas.Presentation.Game.HistorialPartidas
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -35,9 +35,8 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import androidx.navigation.NavHost
 import edu.ucne.composeTarea1.domain.model.Partida
-import edu.ucne.composeTarea1.tareas.Presentation.Partida.Player
+import edu.ucne.composeTarea1.tareas.Presentation.Game.Partida.Player
 import edu.ucne.composeTarea1.ui.theme.Tarea1Theme
 
 @OptIn(ExperimentalMaterial3Api::class)

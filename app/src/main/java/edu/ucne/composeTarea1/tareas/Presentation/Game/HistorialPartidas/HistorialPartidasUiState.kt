@@ -1,6 +1,4 @@
-package edu.ucne.composeTarea1.tareas.Presentation.HistorialPartidas
-
-import edu.ucne.composeTarea1.domain.model.Partida
+package edu.ucne.composeTarea1.tareas.Presentation.Game.HistorialPartidas
 
 data class HistorialPartidasUiState(
     val partidas: List<PartidaConGanador> = emptyList(),

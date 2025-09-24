@@ -1,4 +1,4 @@
-package edu.ucne.composeTarea1.tareas.Presentation.HistorialPartidas
+package edu.ucne.composeTarea1.tareas.Presentation.Game.HistorialPartidas
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
