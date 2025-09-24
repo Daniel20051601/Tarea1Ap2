@@ -1,4 +1,4 @@
-package edu.ucne.composeTarea1.tareas.Presentation.Partida
+package edu.ucne.composeTarea1.tareas.Presentation.Game.Partida
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable

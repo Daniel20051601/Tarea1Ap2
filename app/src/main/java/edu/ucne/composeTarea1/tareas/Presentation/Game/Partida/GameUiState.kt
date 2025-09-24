@@ -1,4 +1,4 @@
-package edu.ucne.composeTarea1.tareas.Presentation.Partida
+package edu.ucne.composeTarea1.tareas.Presentation.Game.Partida
 
 data class GameUiState(
     val board: List<Player?> = List(9) { null },

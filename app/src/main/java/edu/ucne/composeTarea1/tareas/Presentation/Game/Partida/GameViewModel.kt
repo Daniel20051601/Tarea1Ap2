@@ -1,4 +1,4 @@
-package edu.ucne.composeTarea1.tareas.Presentation.Partida
+package edu.ucne.composeTarea1.tareas.Presentation.Game.Partida
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
