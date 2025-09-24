@@ -1,4 +1,4 @@
-package edu.ucne.composeTarea1.tareas.Presentation.list
+package edu.ucne.composeTarea1.tareas.Presentation.Jugador.list
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -15,16 +15,12 @@ import javax.inject.Inject
 class JugadorListViewModel @Inject constructor(
     private val repository: JugadorRepository
 ) : ViewModel() {
+
     val state: StateFlow<ListJugadorUiState> =
         repository.observeJugador()
             .map { jugadores ->
-                val victorias = jugadores.find { it.nombres == "Yo" }?.partidas ?: 0
-
-                val otrosJugadores = jugadores.filter { it.nombres != "Yo" }
-
                 ListJugadorUiState(
-                    jugadores = otrosJugadores,
-                    misVictorias = victorias,
+                    jugadores = jugadores,
                     isLoading = false
                 )
             }
