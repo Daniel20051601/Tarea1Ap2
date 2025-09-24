@@ -12,5 +12,4 @@ class ObserveJugadorUseCase @Inject constructor(
         return repository.observeJugador()
     }
 
-
 }
