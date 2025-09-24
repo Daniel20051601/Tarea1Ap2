@@ -1,4 +1,4 @@
-package edu.ucne.composeTarea1.tareas.Presentation.edit
+package edu.ucne.composeTarea1.tareas.Presentation.Jugador.edit
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -40,7 +40,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import edu.ucne.composeTarea1.domain.model.Jugador
-import edu.ucne.composeTarea1.tareas.Presentation.list.ListJugadorUiEvent
 
 @Composable
 fun EditJugadorScreen(

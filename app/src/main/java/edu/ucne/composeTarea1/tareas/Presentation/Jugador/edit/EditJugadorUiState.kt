@@ -1,4 +1,4 @@
-package edu.ucne.composeTarea1.tareas.Presentation.edit
+package edu.ucne.composeTarea1.tareas.Presentation.Jugador.edit
 
 data class EditJugadorUiState(
     val jugadorId: Int? = null,

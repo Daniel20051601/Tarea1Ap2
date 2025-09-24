@@ -1,4 +1,4 @@
-package edu.ucne.composeTarea1.tareas.Presentation.edit
+package edu.ucne.composeTarea1.tareas.Presentation.Jugador.edit
 
 interface EditJugadorEvent {
     data class Load(val id: Int?): EditJugadorEvent
