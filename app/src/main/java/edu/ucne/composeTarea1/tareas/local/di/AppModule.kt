@@ -10,6 +10,7 @@ import javax.inject.Singleton
 import dagger.hilt.android.qualifiers.ApplicationContext
 import edu.ucne.composeTarea1.tareas.local.Jugador.JugadorDao
 import edu.ucne.composeTarea1.tareas.local.AppDataBase
+import edu.ucne.composeTarea1.tareas.local.Logro.LogroDao
 import edu.ucne.composeTarea1.tareas.local.Partida.PartidaDao
 
 @InstallIn(SingletonComponent::class)
@@ -35,5 +36,11 @@ object AppModule {
     @Singleton
     fun providePartidaDao(db: AppDataBase): PartidaDao {
         return db.PartidaDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideLogroDao(db : AppDataBase): LogroDao {
+        return db.logroDao()
     }
 }
