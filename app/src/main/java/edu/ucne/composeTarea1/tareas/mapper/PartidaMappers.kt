@@ -1,7 +1,7 @@
 package edu.ucne.composeTarea1.tareas.mapper
 
 import edu.ucne.composeTarea1.domain.model.Partida
-import edu.ucne.composeTarea1.tareas.Presentation.Partida.Player
+import edu.ucne.composeTarea1.tareas.Presentation.Game.Partida.Player
 import edu.ucne.composeTarea1.tareas.local.Partida.PartidaEntity
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
