@@ -1,6 +1,6 @@
 package edu.ucne.composeTarea1.domain.model
 
-import edu.ucne.composeTarea1.tareas.Presentation.Partida.Player
+import edu.ucne.composeTarea1.tareas.Presentation.Game.Partida.Player
 
 data class Partida(
     val partidaId: Int = 0,
