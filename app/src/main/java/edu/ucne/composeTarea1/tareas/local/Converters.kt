@@ -1,7 +1,7 @@
 package edu.ucne.composeTarea1.tareas.local
 
 import androidx.room.TypeConverter
-import edu.ucne.composeTarea1.tareas.Presentation.Partida.Player
+import edu.ucne.composeTarea1.tareas.Presentation.Game.Partida.Player
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
