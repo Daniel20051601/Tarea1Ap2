@@ -7,10 +7,12 @@ import androidx.navigation.navArgument
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import edu.ucne.composeTarea1.tareas.Presentation.list.ListJugadorScreen
-import edu.ucne.composeTarea1.tareas.Presentation.Partida.PartidaScreen
-import edu.ucne.composeTarea1.tareas.Presentation.HistorialPartidas.HistorialPartidasScreen
-import edu.ucne.composeTarea1.tareas.Presentation.edit.EditJugadorScreen
+import edu.ucne.composeTarea1.tareas.Presentation.Jugador.list.ListJugadorScreen
+import edu.ucne.composeTarea1.tareas.Presentation.Game.Partida.PartidaScreen
+import edu.ucne.composeTarea1.tareas.Presentation.Game.HistorialPartidas.HistorialPartidasScreen
+import edu.ucne.composeTarea1.tareas.Presentation.Jugador.edit.EditJugadorScreen
+import edu.ucne.composeTarea1.tareas.Presentation.Logro.edit.EditLogroScreen
+import edu.ucne.composeTarea1.tareas.Presentation.Logro.list.ListLogroScreen
 
 @Composable
 fun AppNavHost(
@@ -31,6 +33,22 @@ fun AppNavHost(
         composable(Screen.Historial.route) {
             HistorialPartidasScreen(navigation = navController)
         }
+        composable (Screen.ListLogro.route ){
+            ListLogroScreen(navController = navController)
+        }
+        composable(
+            route = Screen.EditLogro.route,
+            arguments = listOf(
+                navArgument(Screen.EditLogro.ARG) { type = NavType.IntType }
+            )
+        ){backStackEntry ->
+            val logroId = backStackEntry.arguments?.getInt(Screen.EditLogro.ARG)
+            EditLogroScreen(
+                navController = navController,
+                logroId = logroId
+            )
+        }
+
         composable(
             route = Screen.EditJugador.route,
             arguments = listOf(
