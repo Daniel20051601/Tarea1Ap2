@@ -59,8 +59,9 @@ fun ListJugadorScreen(
         DeleteConfirmationDialog(
             jugador = jugador,
             onConfirm = {
-                viewModel.onEvent(ListJugadorUiEvent.OnDeleteJugadorClick(jugador))
-                jugadorParaEliminar = null
+                viewModel.onEvent(ListJugadorUiEvent.OnDeleteJugadorClick(jugador) {
+                    jugadorParaEliminar = null
+                })
             },
             onDismiss = {
                 jugadorParaEliminar = null

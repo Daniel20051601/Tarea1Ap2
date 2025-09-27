@@ -26,14 +26,21 @@ class JugadorListViewModel @Inject constructor(
             }
             .stateIn(
                 scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(5000L),
+                started = SharingStarted.WhileSubscribed(5000L), // 5 segundos de tiempo de espera antes de que el Flow se detenga si no hay subscriptores
                 initialValue = ListJugadorUiState(isLoading = true)
             )
+
     fun onEvent(event: ListJugadorUiEvent) {
         when (event) {
             is ListJugadorUiEvent.OnDeleteJugadorClick -> {
                 viewModelScope.launch {
-                    repository.deleteJugador(event.jugador.jugadorId)
+                    try {
+                        repository.deleteJugador(event.jugador.jugadorId)
+                        event.onSuccess()
+
+                    } catch (e: Exception) {
+                        println("Error al eliminar jugador: ${e.message}")
+                    }
                 }
             }
         }

@@ -48,7 +48,6 @@ fun AppNavHost(
                 logroId = logroId
             )
         }
-
         composable(
             route = Screen.EditJugador.route,
             arguments = listOf(
