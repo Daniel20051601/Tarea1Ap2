@@ -49,7 +49,7 @@ import edu.ucne.composeTarea1.domain.model.Jugador
 @Composable
 fun ListJugadorScreen(
     navController: NavController,
-    viewModel: JugadorListViewModel = hiltViewModel()
+    viewModel: ListJugadorViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -117,7 +117,7 @@ fun ListJugadorScreen(
 }
 
 @Composable
-private fun JugadorItem(
+fun JugadorItem(
     jugador: Jugador,
     onJugadorClick: () -> Unit,
     onDeleteClick: () -> Unit,

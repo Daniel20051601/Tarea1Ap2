@@ -8,17 +8,21 @@ import kotlinx.serialization.json.Json
 class Converters {
     @TypeConverter
     fun fromBoardToString(board: List<Player?>): String {
-        val serializableList = board.map { it?.name }
-        return Json.encodeToString(serializableList)
+        return board.joinToString("") {
+            when (it) {
+                Player.X -> "X"
+                Player.O -> "O"
+                else -> "."
+            }
+        }
     }
 
     @TypeConverter
-    fun fromStringToBoard(jsonString: String): List<Player?> {
-        val serializableList = Json.decodeFromString<List<String?>>(jsonString)
-        return serializableList.map { name ->
-            when (name) {
-                "X" -> Player.X
-                "O" -> Player.O
+    fun fromStringToBoard(data: String): List<Player?> {
+        return data.map {
+            when (it) {
+                'X' -> Player.X
+                'O' -> Player.O
                 else -> null
             }
         }

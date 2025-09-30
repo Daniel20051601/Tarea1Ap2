@@ -2,19 +2,14 @@ package edu.ucne.composeTarea1.tareas.mapper
 
 import edu.ucne.composeTarea1.domain.model.Partida
 import edu.ucne.composeTarea1.tareas.Presentation.Game.Partida.Player
+import edu.ucne.composeTarea1.tareas.local.Converters
 import edu.ucne.composeTarea1.tareas.local.Partida.PartidaEntity
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
-fun PartidaEntity.toDomain(): Partida {
-    val boardList = Json.decodeFromString<List<String?>>(this.boardState).map { name ->
-        when (name) {
-            "X" -> Player.X
-            "O" -> Player.O
-            else -> null
-        }
-    }
 
+fun PartidaEntity.toDomain(): Partida {
+    val boardList = Converters().fromStringToBoard(this.boardState)
     return Partida(
         partidaId = this.partidaId,
         fecha = this.fecha,
@@ -28,8 +23,7 @@ fun PartidaEntity.toDomain(): Partida {
 }
 
 fun Partida.toEntity(): PartidaEntity {
-    val boardJsonString = Json.encodeToString(this.boardState.map { it?.name })
-
+    val boardString = Converters().fromBoardToString(this.boardState)
     return PartidaEntity(
         partidaId = this.partidaId,
         fecha = this.fecha,
@@ -37,7 +31,7 @@ fun Partida.toEntity(): PartidaEntity {
         jugador2Id = this.jugador2Id,
         ganadorId = this.ganadorId,
         esFinalizada = this.esFinalizada,
-        boardState = boardJsonString,
+        boardState = boardString,
         currentPlayer = this.currentPlayer
     )
 }

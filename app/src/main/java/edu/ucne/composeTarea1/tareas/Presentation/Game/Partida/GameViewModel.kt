@@ -5,8 +5,12 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import edu.ucne.composeTarea1.domain.model.Jugador
 import edu.ucne.composeTarea1.domain.model.Partida
-import edu.ucne.composeTarea1.domain.repository.JugadorRepository
-import edu.ucne.composeTarea1.domain.repository.PartidaRepository
+import edu.ucne.composeTarea1.domain.usecase.jugadorUseCase.GetJugadorUseCase
+import edu.ucne.composeTarea1.domain.usecase.jugadorUseCase.ObserveJugadorUseCase
+import edu.ucne.composeTarea1.domain.usecase.jugadorUseCase.UpsertJugadorUseCase
+import edu.ucne.composeTarea1.domain.usecase.partidaUseCase.ClearPartidasEnProgresoUseCase
+import edu.ucne.composeTarea1.domain.usecase.partidaUseCase.GetPartidaEnProgresoUseCase
+import edu.ucne.composeTarea1.domain.usecase.partidaUseCase.UpsertPartidaUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.firstOrNull
@@ -18,8 +22,12 @@ import javax.inject.Inject
 
 @HiltViewModel
 class GameViewModel @Inject constructor(
-    private val jugadorRepository: JugadorRepository,
-    private val partidaRepository: PartidaRepository,
+    private val getJugadorUseCase: GetJugadorUseCase,
+    private val observeJugadorUseCase: ObserveJugadorUseCase,
+    private val upsertJugadorUseCase: UpsertJugadorUseCase,
+    private val getPartidaEnProgresoUseCase: GetPartidaEnProgresoUseCase,
+    private val upsertPartidaUseCase: UpsertPartidaUseCase,
+    private val clearPartidasEnProgresoUseCase: ClearPartidasEnProgresoUseCase
 ) : ViewModel() {
 
     private val _setupState = MutableStateFlow(PartidaSetupState())
@@ -38,11 +46,10 @@ class GameViewModel @Inject constructor(
 
     private fun loadGameInProgress() {
         viewModelScope.launch {
-            partidaRepository.getPartidaEnProgreso().collect { partida ->
+            getPartidaEnProgresoUseCase().collect { partida ->
                 if (partida != null && partida.jugador1Id != null && partida.jugador2Id != null) {
-                    val jugador1 = jugadorRepository.getJugador(partida.jugador1Id)
-                    val jugador2 = jugadorRepository.getJugador(partida.jugador2Id)
-
+                    val jugador1 = getJugadorUseCase(partida.jugador1Id)
+                    val jugador2 = getJugadorUseCase(partida.jugador2Id)
                     if (jugador1 != null && jugador2 != null) {
                         _setupState.update {
                             it.copy(
@@ -65,7 +72,7 @@ class GameViewModel @Inject constructor(
 
     private fun loadJugadores() {
         viewModelScope.launch {
-            jugadorRepository.observeJugador().collect { jugadores ->
+            observeJugadorUseCase().collect { jugadores ->
                 val selIzqId = _setupState.value.jugadorIzquierda?.jugadorId
                 val selDerId = _setupState.value.jugadorDerecha?.jugadorId
                 val izq = jugadores.find { it.jugadorId == selIzqId }
@@ -101,8 +108,7 @@ class GameViewModel @Inject constructor(
         val der = _setupState.value.jugadorDerecha
         if (izq != null && der != null && izq.jugadorId != der.jugadorId) {
             viewModelScope.launch {
-                partidaRepository.clearPartidasEnProgreso()
-
+                clearPartidasEnProgresoUseCase()
                 val initialState = GameUiState()
                 val nuevaPartida = Partida(
                     fecha = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")),
@@ -113,8 +119,7 @@ class GameViewModel @Inject constructor(
                     boardState = initialState.board,
                     currentPlayer = initialState.currentPlayer.name
                 )
-                partidaRepository.upsert(nuevaPartida)
-
+                upsertPartidaUseCase(nuevaPartida)
                 _gameState.value = initialState
                 _isGameStarted.value = true
             }
@@ -124,13 +129,11 @@ class GameViewModel @Inject constructor(
     fun onCellClick(index: Int) {
         val state = _gameState.value
         if (state.board[index] != null || state.winner != null || state.isDraw) return
-
         val newBoard = state.board.toMutableList()
         newBoard[index] = state.currentPlayer
         val newWinner = checkWinner(newBoard)
         val isDraw = newBoard.all { it != null } && newWinner == null
         val nextPlayer = if (state.currentPlayer == Player.X) Player.O else Player.X
-
         _gameState.update {
             it.copy(
                 board = newBoard,
@@ -141,57 +144,48 @@ class GameViewModel @Inject constructor(
         }
         saveGameProgress(newBoard, nextPlayer)
         if (newWinner != null || isDraw) {
-            onGameFinished(ganador = newWinner, isDraw = isDraw)
+            onGameFinished(newWinner, isDraw)
         }
     }
 
     private fun saveGameProgress(board: List<Player?>, currentPlayer: Player) {
         viewModelScope.launch {
-            partidaRepository.getPartidaEnProgreso().firstOrNull()?.let { partidaActual ->
+            getPartidaEnProgresoUseCase().firstOrNull()?.let { partidaActual ->
                 val partidaActualizada = partidaActual.copy(
                     boardState = board,
                     currentPlayer = currentPlayer.name
                 )
-                partidaRepository.upsert(partidaActualizada)
+                upsertPartidaUseCase(partidaActualizada)
             }
         }
     }
 
     fun restartGame() {
         viewModelScope.launch {
-            partidaRepository.clearPartidasEnProgreso()
+            clearPartidasEnProgresoUseCase()
             _gameState.value = GameUiState()
             _isGameStarted.value = false
             _setupState.update { it.copy(jugadorIzquierda = null, jugadorDerecha = null) }
         }
     }
 
-    private fun onGameFinished(ganador: Player?, isDraw: Boolean = false) {
+    private fun onGameFinished(ganador: Player?, isDraw: Boolean) {
         viewModelScope.launch {
             val izq = setupState.value.jugadorIzquierda ?: return@launch
             val der = setupState.value.jugadorDerecha ?: return@launch
-
-            val jugadorGanadorId: Int?
-
-            if (ganador != null) {
-                val jugadorQueGano = when (ganador) {
-                    Player.X -> izq
-                    Player.O -> der
-                }
+            val jugadorGanadorId: Int? = if (ganador != null) {
+                val jugadorQueGano = if (ganador == Player.X) izq else der
                 val actualizado = jugadorQueGano.copy(partidas = jugadorQueGano.partidas + 1)
-                jugadorRepository.save(actualizado)
-                jugadorGanadorId = jugadorQueGano.jugadorId
-            } else {
-                jugadorGanadorId = null
-            }
-
+                upsertJugadorUseCase(actualizado)
+                jugadorQueGano.jugadorId
+            } else null
             if (ganador != null || isDraw) {
-                partidaRepository.getPartidaEnProgreso().firstOrNull()?.let { partidaActual ->
+                getPartidaEnProgresoUseCase().firstOrNull()?.let { partidaActual ->
                     val partidaFinalizada = partidaActual.copy(
                         ganadorId = jugadorGanadorId,
                         esFinalizada = true
                     )
-                    partidaRepository.upsert(partidaFinalizada)
+                    upsertPartidaUseCase(partidaFinalizada)
                 }
             }
         }

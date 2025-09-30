@@ -40,6 +40,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import edu.ucne.composeTarea1.domain.model.Jugador
+import androidx.compose.ui.platform.testTag
 
 @Composable
 fun EditJugadorScreen(
@@ -64,7 +65,7 @@ fun EditJugadorScreen(
 }
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun EditJugadorBody(
+fun EditJugadorBody(
     state: EditJugadorUiState,
     onEvent: (EditJugadorEvent) -> Unit,
     onNavigateBack: () -> Unit
@@ -120,7 +121,9 @@ private fun EditJugadorBody(
                 onValueChange = { onEvent(EditJugadorEvent.NombreChanged(it)) },
                 label = { Text("Nombre") },
                 isError = state.nombreError != null,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("input_nombre")
             )
             if (state.nombreError != null) {
                 Text(
@@ -136,7 +139,9 @@ private fun EditJugadorBody(
                 label = { Text("Partidas") },
                 isError = state.partidasError != null,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("input_partidas")
             )
             if (state.partidasError != null) {
                 Text(
@@ -155,7 +160,9 @@ private fun EditJugadorBody(
                 Button(
                     onClick = { onEvent(EditJugadorEvent.Save) },
                     enabled = !state.isSaving,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier
+                        .weight(1f)
+                        .testTag("btn_guardar")
                 ) {
                     Text("Guardar")
                 }
@@ -172,7 +179,10 @@ private fun EditJugadorBody(
                         }
                                   },
                         enabled = !state.isDeleting,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier
+                            .weight(1f)
+                            .testTag("btn_eliminar")
+
                     ) {
                         Text("Eliminar")
                     }

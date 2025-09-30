@@ -12,8 +12,8 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class JugadorListViewModel @Inject constructor(
-    private val repository: JugadorRepository
+class ListJugadorViewModel @Inject constructor(
+    private val repository: JugadorRepository,
 ) : ViewModel() {
 
     val state: StateFlow<ListJugadorUiState> =
@@ -27,13 +27,13 @@ class JugadorListViewModel @Inject constructor(
             .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(5000L), // 5 segundos de tiempo de espera antes de que el Flow se detenga si no hay subscriptores
-                initialValue = ListJugadorUiState(isLoading = true)
+                initialValue = ListJugadorUiState(isLoading = true),
             )
 
     fun onEvent(event: ListJugadorUiEvent) {
         when (event) {
             is ListJugadorUiEvent.OnDeleteJugadorClick -> {
-                viewModelScope.launch {
+                viewModelScope.launch{
                     try {
                         repository.deleteJugador(event.jugador.jugadorId)
                         event.onSuccess()
