@@ -27,7 +27,7 @@ class JugadorValidator @Inject constructor(
         if (partida == null) {
             return ValidationResult(isValid = false, error = "Debe ser un número entero.")
         }
-        if (partida <= 0) {
+        if (partida < 0) {
             return ValidationResult(isValid = false, error = "Debe ser un valor positivo.")
         }
         if (partida > 100) {

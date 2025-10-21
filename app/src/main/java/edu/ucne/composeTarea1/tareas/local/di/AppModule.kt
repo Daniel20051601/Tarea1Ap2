@@ -8,25 +8,39 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 import dagger.hilt.android.qualifiers.ApplicationContext
-import edu.ucne.composeTarea1.tareas.local.JugadorDao
-import edu.ucne.composeTarea1.tareas.local.JugadorDataBase
+import edu.ucne.composeTarea1.tareas.local.Jugador.JugadorDao
+import edu.ucne.composeTarea1.tareas.local.AppDataBase
+import edu.ucne.composeTarea1.tareas.local.Logro.LogroDao
+import edu.ucne.composeTarea1.tareas.local.Partida.PartidaDao
 
 @InstallIn(SingletonComponent::class)
 @Module
 object AppModule {
     @Provides
     @Singleton
-    fun provideJugadorDb(@ApplicationContext appContext: Context) : JugadorDataBase {
+    fun provideJugadorDb(@ApplicationContext appContext: Context) : AppDataBase {
         return Room.databaseBuilder(
             appContext,
-            JugadorDataBase::class.java,
+            AppDataBase::class.java,
             "Jugador.db")
             .fallbackToDestructiveMigration()
             .build()
     }
     @Provides
     @Singleton
-    fun provideTaskDao(db: JugadorDataBase): JugadorDao {
+    fun provideTaskDao(db: AppDataBase): JugadorDao {
         return db.jugadorDao()
+    }
+
+    @Provides
+    @Singleton
+    fun providePartidaDao(db: AppDataBase): PartidaDao {
+        return db.PartidaDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideLogroDao(db : AppDataBase): LogroDao {
+        return db.logroDao()
     }
 }

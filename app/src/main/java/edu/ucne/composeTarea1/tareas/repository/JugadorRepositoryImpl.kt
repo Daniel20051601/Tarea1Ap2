@@ -3,7 +3,7 @@ package edu.ucne.composeTarea1.tareas.repository
 import androidx.compose.runtime.snapshots.toInt
 import edu.ucne.composeTarea1.domain.model.Jugador
 import edu.ucne.composeTarea1.domain.repository.JugadorRepository
-import edu.ucne.composeTarea1.tareas.local.JugadorDao
+import edu.ucne.composeTarea1.tareas.local.Jugador.JugadorDao
 import edu.ucne.composeTarea1.tareas.mapper.toDomain
 import edu.ucne.composeTarea1.tareas.mapper.toEntity
 import kotlinx.coroutines.flow.Flow
@@ -12,6 +12,9 @@ import javax.inject.Inject
 
 class JugadorRepositoryImpl @Inject constructor(private val dao: JugadorDao): JugadorRepository {
 
+    override suspend fun save(jugador: Jugador) {
+        dao.upsert(jugador.toEntity())
+    }
     override fun observeJugador(): Flow<List<Jugador>> = dao.observeAll().map { list ->
         list.map { it.toDomain() }
     }
