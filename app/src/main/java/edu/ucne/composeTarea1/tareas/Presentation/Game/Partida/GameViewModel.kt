@@ -4,10 +4,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import edu.ucne.composeTarea1.domain.model.Jugador
+import edu.ucne.composeTarea1.domain.model.Movimientos
 import edu.ucne.composeTarea1.domain.model.Partida
 import edu.ucne.composeTarea1.domain.usecase.jugadorUseCase.GetJugadorUseCase
 import edu.ucne.composeTarea1.domain.usecase.jugadorUseCase.ObserveJugadorUseCase
 import edu.ucne.composeTarea1.domain.usecase.jugadorUseCase.UpsertJugadorUseCase
+import edu.ucne.composeTarea1.domain.usecase.movimientosUseCase.getMovimientosUseCase
+import edu.ucne.composeTarea1.domain.usecase.movimientosUseCase.postMovimientosUseCase
 import edu.ucne.composeTarea1.domain.usecase.partidaUseCase.ClearPartidasEnProgresoUseCase
 import edu.ucne.composeTarea1.domain.usecase.partidaUseCase.GetPartidaEnProgresoUseCase
 import edu.ucne.composeTarea1.domain.usecase.partidaUseCase.UpsertPartidaUseCase
@@ -19,6 +22,12 @@ import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
+import kotlin.times
+import android.util.Log
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import kotlin.times
+
 
 @HiltViewModel
 class GameViewModel @Inject constructor(
@@ -27,7 +36,9 @@ class GameViewModel @Inject constructor(
     private val upsertJugadorUseCase: UpsertJugadorUseCase,
     private val getPartidaEnProgresoUseCase: GetPartidaEnProgresoUseCase,
     private val upsertPartidaUseCase: UpsertPartidaUseCase,
-    private val clearPartidasEnProgresoUseCase: ClearPartidasEnProgresoUseCase
+    private val clearPartidasEnProgresoUseCase: ClearPartidasEnProgresoUseCase,
+    private val getMovimientosUseCase: getMovimientosUseCase,
+    private val postMovimientosUseCase: postMovimientosUseCase
 ) : ViewModel() {
 
     private val _setupState = MutableStateFlow(PartidaSetupState())
@@ -39,9 +50,66 @@ class GameViewModel @Inject constructor(
     private val _isGameStarted = MutableStateFlow(false)
     val isGameStarted = _isGameStarted.asStateFlow()
 
+    private val _partidaId = MutableStateFlow("")
+    val partidaId = _partidaId.asStateFlow()
+
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading = _isLoading.asStateFlow()
+
     init {
         loadJugadores()
         loadGameInProgress()
+    }
+
+    fun setPartidaId(id: String) {
+        _partidaId.value = id
+    }
+
+    fun cargarPartidaPorId() {
+        val id = partidaId.value.toIntOrNull() ?: return
+        _isLoading.value = true
+
+        viewModelScope.launch {
+            try {
+                val movimientos = getMovimientosUseCase(id).firstOrNull() ?: emptyList()
+                Log.d("GameViewModel", "Movimientos recibidos: ${movimientos.size}")
+
+                if (movimientos.isNotEmpty()) {
+                    val newBoard = MutableList<Player?>(9) { null }
+                    var currentPlayer = Player.X
+
+                    movimientos.forEach { movimiento ->
+                        Log.d("GameViewModel", "Procesando movimiento: $movimiento")
+
+                        val index = (movimiento.posicionFila - 1) * 3 + (movimiento.posicionColumna - 1)
+
+                        if (index in 0..8) {
+                            newBoard[index] = if (movimiento.jugador == "X") Player.X else Player.O
+                            currentPlayer = if (currentPlayer == Player.X) Player.O else Player.X
+                        }
+                    }
+
+                    Log.d("GameViewModel", "Tablero actualizado: $newBoard")
+
+                    val winner = checkWinner(newBoard)
+                    val isDraw = newBoard.all { it != null } && winner == null
+
+                    _gameState.update {
+                        it.copy(
+                            board = newBoard,
+                            currentPlayer = currentPlayer,
+                            winner = winner,
+                            isDraw = isDraw
+                        )
+                    }
+                    _isGameStarted.value = true
+                }
+            } catch (e: Exception) {
+                Log.e("GameViewModel", "Error al cargar partida: ${e.message}")
+            } finally {
+                _isLoading.value = false
+            }
+        }
     }
 
     private fun loadGameInProgress() {
@@ -129,22 +197,65 @@ class GameViewModel @Inject constructor(
     fun onCellClick(index: Int) {
         val state = _gameState.value
         if (state.board[index] != null || state.winner != null || state.isDraw) return
-        val newBoard = state.board.toMutableList()
-        newBoard[index] = state.currentPlayer
-        val newWinner = checkWinner(newBoard)
-        val isDraw = newBoard.all { it != null } && newWinner == null
-        val nextPlayer = if (state.currentPlayer == Player.X) Player.O else Player.X
-        _gameState.update {
-            it.copy(
-                board = newBoard,
-                currentPlayer = nextPlayer,
-                winner = newWinner,
-                isDraw = isDraw
+
+        val partidaIdInt = partidaId.value.toIntOrNull()
+        if (partidaIdInt != null) {
+            val newBoard = state.board.toMutableList()
+            newBoard[index] = state.currentPlayer
+            val fila = index / 3
+            val columna = index % 3
+
+            val movimiento = Movimientos(
+                movimientoId = 0,
+                partidaId = partidaIdInt,
+                jugador = state.currentPlayer.name,
+                posicionFila = fila + 1,
+                posicionColumna = columna + 1
             )
-        }
-        saveGameProgress(newBoard, nextPlayer)
-        if (newWinner != null || isDraw) {
-            onGameFinished(newWinner, isDraw)
+
+            viewModelScope.launch {
+                try {
+                    val result = postMovimientosUseCase(partidaIdInt, movimiento)
+                    if (result) {
+                        val newWinner = checkWinner(newBoard)
+                        val isDraw = newBoard.all { it != null } && newWinner == null
+                        val nextPlayer = if (state.currentPlayer == Player.X) Player.O else Player.X
+
+                        _gameState.update {
+                            it.copy(
+                                board = newBoard,
+                                currentPlayer = nextPlayer,
+                                winner = newWinner,
+                                isDraw = isDraw
+                            )
+                        }
+
+                        if (newWinner != null || isDraw) {
+                            onGameFinished(newWinner, isDraw)
+                        }
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+        } else {
+            val newBoard = state.board.toMutableList()
+            newBoard[index] = state.currentPlayer
+            val newWinner = checkWinner(newBoard)
+            val isDraw = newBoard.all { it != null } && newWinner == null
+            val nextPlayer = if (state.currentPlayer == Player.X) Player.O else Player.X
+            _gameState.update {
+                it.copy(
+                    board = newBoard,
+                    currentPlayer = nextPlayer,
+                    winner = newWinner,
+                    isDraw = isDraw
+                )
+            }
+            saveGameProgress(newBoard, nextPlayer)
+            if (newWinner != null || isDraw) {
+                onGameFinished(newWinner, isDraw)
+            }
         }
     }
 
@@ -162,11 +273,16 @@ class GameViewModel @Inject constructor(
 
     fun restartGame() {
         viewModelScope.launch {
-            clearPartidasEnProgresoUseCase()
             _gameState.value = GameUiState()
-            _isGameStarted.value = false
-            _setupState.update { it.copy(jugadorIzquierda = null, jugadorDerecha = null) }
         }
+    }
+
+    fun volverASeleccionDeJugador() {
+        _isGameStarted.value = false
+        _setupState.update {
+            it.copy(jugadorIzquierda = null, jugadorDerecha = null)
+        }
+        _gameState.value = GameUiState()
     }
 
     private fun onGameFinished(ganador: Player?, isDraw: Boolean) {
