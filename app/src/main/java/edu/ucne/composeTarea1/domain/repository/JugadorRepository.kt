@@ -4,6 +4,7 @@ import edu.ucne.composeTarea1.domain.model.Jugador
 import kotlinx.coroutines.flow.Flow
 
 interface JugadorRepository {
+    suspend fun save(jugador: Jugador)
     fun observeJugador(): Flow<List<Jugador>>
     suspend fun getJugador(id: Int): Jugador?
     suspend fun upsertJugador(jugador: Jugador): Int

@@ -1,3 +1,19 @@
 <resources>
-    <string name="app_name">Tarea1</string>
+    <string name="app_name">TicTacToe</string>
+    <!-- Textos para la Pantalla de Partida -->
+    <string name="choose_opponent">Elige a tu Oponente</string>
+    <string name="vs">VS</string>
+    <string name="player_placeholder_you">Yo</string>
+    <string name="player_placeholder_opponent">Oponente</string>
+    <string name="start_game">Iniciar Partida</string>
+    <string name="select_an_opponent">Selecciona un Oponente</string>
+    <string name="no_other_players">No hay otros jugadores. Añade uno desde la lista de jugadores.
+    </string>
+    <string name="restart_game">Reiniciar Juego</string>
+
+    <!-- Textos para el estado del juego (con placeholders) -->
+    <string name="game_winner">🏆 ¡Ganador: %1$s!</string>
+    <string name="game_draw">Empate</string>
+    <string name="your_turn">¡Es tu turno!</string>
+    <string name="opponent_turn">Turno de: %1$s</string>
 </resources>
