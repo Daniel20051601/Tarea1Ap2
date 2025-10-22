@@ -1,6 +1,5 @@
 package edu.ucne.composeTarea1.domain.repository
 
-import edu.ucne.composeTarea1.domain.model.Movimientos
 import edu.ucne.composeTarea1.domain.model.Partida
 import kotlinx.coroutines.flow.Flow
 
