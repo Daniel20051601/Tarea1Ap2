@@ -1,10 +1,15 @@
 package edu.ucne.composeTarea1.tareas.Presentation.Game.Partida
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -12,12 +17,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavController
 import edu.ucne.composeTarea1.R
 import edu.ucne.composeTarea1.domain.model.Jugador
 import edu.ucne.composeTarea1.ui.theme.Tarea1Theme
@@ -25,9 +32,11 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun PartidaScreen(
-    viewModel: GameViewModel = hiltViewModel()
+    viewModel: GameViewModel = hiltViewModel(),
 ) {
     val isGameStarted by viewModel.isGameStarted.collectAsStateWithLifecycle()
+    val partidaId by viewModel.partidaId.collectAsStateWithLifecycle()
+    val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
 
     Scaffold { padding ->
         Column(
@@ -35,22 +44,65 @@ fun PartidaScreen(
                 .padding(padding)
                 .fillMaxSize()
                 .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            if (isGameStarted) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    OutlinedTextField(
+                        value = partidaId,
+                        onValueChange = { viewModel.setPartidaId(it) },
+                        label = { Text("ID Partida") },
+                        modifier = Modifier.weight(1f),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        singleLine = true
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    IconButton(
+                        onClick = { viewModel.cargarPartidaPorId() },
+                        modifier = Modifier
+                            .size(48.dp)
+                            .border(2.dp, color = MaterialTheme.colorScheme.primary, shape = CircleShape)
+                    ) {
+                        if (isLoading) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(24.dp),
+                                strokeWidth = 2.dp
+                            )
+                        } else {
+                            Icon(
+                                imageVector = Icons.Default.Refresh,
+                                contentDescription = "Actualizar partida",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
+                }
+            }
+
             if (!isGameStarted) {
                 PartidaSetupScreen(viewModel = viewModel)
             } else {
+                Spacer(modifier = Modifier.weight(1f))
+
                 val gameState by viewModel.gameState.collectAsStateWithLifecycle()
                 GameBoard(
                     uiState = gameState,
                     onCellClick = viewModel::onCellClick,
-                    onRestartGame = viewModel::restartGame
+                    onRestartGame = viewModel::restartGame,
+                    onExitGame = viewModel::volverASeleccionDeJugador
                 )
+
+                Spacer(modifier = Modifier.weight(1f))
             }
         }
     }
 }
+
+
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -168,7 +220,8 @@ private fun PlayerSlot(jugador: Jugador?, placeholder: String, onClick: (() -> U
 fun GameBoard(
     uiState: GameUiState,
     onCellClick: (Int) -> Unit,
-    onRestartGame: () -> Unit
+    onRestartGame: () -> Unit,
+    onExitGame: () -> Unit
 ) {
     val setupState by hiltViewModel<GameViewModel>().setupState.collectAsStateWithLifecycle()
     val jugadorX = setupState.jugadorIzquierda?.nombres ?: "Jugador X"
@@ -181,19 +234,42 @@ fun GameBoard(
         uiState.currentPlayer == Player.X -> stringResource(R.string.opponent_turn, jugadorX)
         else -> stringResource(R.string.opponent_turn, jugadorO)
     }
-    Text(
-        text = gameStatus,
-        fontSize = 24.sp,
-        fontWeight = FontWeight.Bold
-    )
 
-    Spacer(modifier = Modifier.height(20.dp))
-    GameBoardBody(board = uiState.board, onCellClick = onCellClick)
-    Spacer(modifier = Modifier.height(20.dp))
-    Button(onClick = onRestartGame) {
-        Text(stringResource(R.string.restart_game), fontSize = 18.sp)
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(
+            text = gameStatus,
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold
+        )
+
+        Spacer(modifier = Modifier.height(20.dp))
+        GameBoardBody(board = uiState.board, onCellClick = onCellClick)
+        Spacer(modifier = Modifier.height(20.dp))
+
+        if (uiState.winner != null || uiState.isDraw) {
+            Row(
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Button(onClick = onRestartGame) {
+                    Text("New Game", fontSize = 18.sp)
+                }
+
+                Button(onClick = onExitGame) {
+                    Text("Exit Game", fontSize = 18.sp)
+                }
+            }
+        } else {
+            Button(onClick = onRestartGame) {
+                Text(stringResource(R.string.restart_game), fontSize = 18.sp)
+            }
+        }
     }
 }
+
 
 @Composable
 fun GameBoardBody(board: List<Player?>, onCellClick: (Int) -> Unit) {
@@ -270,7 +346,8 @@ private fun GameBoardPreview() {
         GameBoard(
             uiState = GameUiState(winner = Player.X),
             onCellClick = {},
-            onRestartGame = {}
+            onRestartGame = {},
+            onExitGame = {}
         )
     }
 }
